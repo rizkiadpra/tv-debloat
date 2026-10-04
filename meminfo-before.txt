@@ -1,0 +1,5 @@
+=== BEFORE: 2026-09-05 10:19:43 ===
+Total RAM: 1,004,412K (status critical)
+ Free RAM:   211,075K (   67,823K cached pss +    47,876K cached kernel +    95,376K free)
+ Used RAM: 1,272,927K (  425,495K used pss +   847,432K kernel)
+ Lost RAM:  -397,264K

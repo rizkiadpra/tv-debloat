@@ -1,0 +1,4 @@
+=== FINAL RAM ===
+Total RAM: 1,004,412K (status normal)
+ Free RAM:   419,533K (  225,213K cached pss +    62,468K cached kernel +   131,852K free)
+ Used RAM: 1,200,777K (  382,061K used pss +   818,716K kernel)

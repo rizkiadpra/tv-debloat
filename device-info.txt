@@ -1,0 +1,6 @@
+=== DEVICE ===
+model: MiTV-AESP0
+device: aquaman
+android: 9
+sdk: 28
+build: PI.2055 release-keys
