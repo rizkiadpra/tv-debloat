@@ -15,6 +15,10 @@ about 206 MB to 410 MB, and the low-memory status went from `critical` to `norma
   relay. macOS 26 Local Network Privacy blocks Homebrew `adb` from reaching the
   LAN, but the Apple-signed `/usr/bin/python3` is allowed, so it relays the traffic.
 
+To do the same on your own TV, start with [`GUIDE.md`](GUIDE.md). It covers setup,
+the rules, credit for the agent prompt this followed, and five places where that
+prompt didn't fit this Android 9 Amlogic stick.
+
 The Projectivy APK is not included. Get it from the official source.
 
 Use at your own risk. Package names differ between devices and firmware, so check

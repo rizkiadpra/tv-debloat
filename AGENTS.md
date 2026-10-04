@@ -13,6 +13,9 @@ anything against the TV.
 
 ## Files
 
+- `README.md` / `GUIDE.md` — public docs. GUIDE credits the source prompt
+  (Medium article + mgultekin/android-cleaning-xiaomi, unlicensed: link, never copy)
+  and lists where it did not fit this device.
 - `connect.sh [tv-ip] [port]` — starts `adb_relay.py` and connects adb to
   `127.0.0.1:15555`. Default TV IP `192.168.100.33` (DHCP, may change).
 - `adb_relay.py` — TCP relay. macOS 26 Local Network Privacy blocks Homebrew
