@@ -1,7 +1,6 @@
 # Debloat Mi TV Stick
 
-Diperbarui 24 Okt 2026 dari PRD.md 10 Okt dan memori debloat TV. Panel project-to-do di Claude Code membaca
-berkas ini; centang butir yang selesai dan perbarui tanggalnya.
+Diperbarui 24 Okt 2026. Dari PRD.md 10 Okt dan memori debloat TV.
 
 ## Berikutnya
 
