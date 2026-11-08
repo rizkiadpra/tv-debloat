@@ -1,3 +1,5 @@
 *.apk
 *.log
 .DS_Store
+rcpair/build/
+rcpair/debug.keystore

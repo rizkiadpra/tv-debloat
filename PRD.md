@@ -1,6 +1,6 @@
 # PRD: tv-debloat
 
-Diperbarui: 2026-10-10 · Status: live · Repo: https://github.com/rizkiadpra/tv-debloat
+Diperbarui: 2026-11-08 · Status: live (launcher diganti ke tv-home; remote dipasangkan ulang dengan RC Pair, 2026-11-08) · Repo: https://github.com/rizkiadpra/tv-debloat
 
 ## Masalah dan tujuan
 Xiaomi Mi TV Stick (`MiTV-AESP0`, kode `aquaman`, Android 9) terasa patah-patah karena RAM kosong hanya sekitar 206 MB dan status memori `critical`. Banyak paket bawaan berisi telemetri, wizard setup yang sudah tidak terpakai, screensaver, dan aplikasi yang tidak dipakai pemilik.
@@ -15,7 +15,8 @@ Pemilik perangkat ini (satu TV stick, rumah tangga sendiri). Pembaca publik yang
 ## Lingkup saat ini
 - Mencatat per batch paket yang dimatikan beserta alasannya, daftar paket yang dilindungi, dan angka RAM sebelum dan sesudah (`changelog.md`).
 - Mematikan 40 dari 89 paket di perangkat ini dengan `pm disable-user --user 0`.
-- Mengganti launcher ke Projectivy 4.71 dan mematikan launcher bawaan yang bersaing.
+- Mengganti launcher ke Projectivy 4.71 dan mematikan launcher bawaan yang bersaing (2026-09-05).
+- Sejak 2026-11-08 Home memakai tv-home (`com.mihir.tvhome`) dari github.com/mihirgupta0900/tv-home, dibangun ulang untuk Android 9 dari salinan lokal `~/Projects/Personal/tv-home`. Projectivy dimatikan, tidak dihapus. `revert-tvhome.sh` mengembalikannya.
 - Menyambungkan ADB dari macOS 26 lewat relay loopback (`connect.sh`, `adb_relay.py`).
 - Mengembalikan perangkat ke kondisi awal dengan satu skrip (`revert.sh`).
 - Menyimpan rekaman kondisi perangkat (`packages-*.txt`, `disabled-*.txt`, `meminfo-*.txt`, `device-info.txt`).
@@ -41,7 +42,7 @@ Hasil terukur di perangkat ini, dari `changelog.md`:
 RAM kosong berayun sekitar 50 MB tergantung aplikasi yang sedang jalan, jadi tanda yang andal adalah status memori. Pembacaan akhir diambil saat Netflix dan YouTube sedang berjalan. Ukuran lain, misalnya jumlah pembaca, bintang, atau orang yang berhasil mengulang, belum ditetapkan dan belum diketahui. Tanda kualitatif: TV tidak lagi patah-patah dan tombol Home membuka Projectivy.
 
 ## Arsitektur dan stack ringkas
-Tidak ada aplikasi. Isinya skrip shell (`connect.sh`, `revert.sh`), satu relay TCP Python (`adb_relay.py`, memakai `/usr/bin/python3` bawaan Apple), dan dokumen Markdown. Semua perintah ke TV memakai `adb` lewat `127.0.0.1:15555` ke `192.168.100.33:5555`. Cara jalan dan jebakan ada di `AGENTS.md`.
+Tidak ada aplikasi. Isinya skrip shell (`connect.sh`, `revert.sh`), satu relay TCP Python (`adb_relay.py`, memakai `/usr/bin/python3` bawaan Apple), dan dokumen Markdown. Semua perintah ke TV memakai `adb` lewat `127.0.0.1:15555` ke `192.168.100.35:5555` (sebelum 2026-11-08: `.33`). Cara jalan dan jebakan ada di `AGENTS.md`.
 
 ## Deploy dan lingkungan
 Di repo ini "deploy" berarti mempublikasikan panduan dan skrip ke GitHub. Tidak ada server atau build.
@@ -57,6 +58,8 @@ Di repo ini "deploy" berarti mempublikasikan panduan dan skrip ke GitHub. Tidak 
 ## Riwayat rilis
 | Tanggal | Versi / commit | Perubahan |
 |---|---|---|
+| 2026-11-08 | belum di-commit | Remote dipasangkan ulang dengan aplikasi `rcpair/` (sumber di repo), lalu RC Pair dinonaktifkan. Bond bertahan setelah restart |
+| 2026-11-08 | belum di-commit | Di perangkat: Home diganti ke tv-home (APK SHA-256 `96ef4207…a087`), Projectivy dimatikan, `revert-tvhome.sh` ditambahkan, IP default `connect.sh` jadi `.35`. Catatan masalah remote di `changelog.md` |
 | 2026-10-04 | 08b61f3 | README ditulis ulang dalam Bahasa Indonesia dengan panduan langkah demi langkah |
 | 2026-10-04 | 5c00f9b | `GUIDE.md` ditambahkan: langkah persiapan, kredit sumber, dan perbedaan dari prompt asli |
 | 2026-10-04 | 8160f11 | Commit awal: changelog, snapshot, `revert.sh`, `connect.sh`, `adb_relay.py` |
@@ -74,7 +77,7 @@ Proses debloat di TV sendiri dikerjakan 2026-09-05 (tercatat di `changelog.md`),
 ## Risiko dan pertanyaan terbuka
 - `revert.sh` menyalakan semua paket yang sedang mati, termasuk yang sudah mati dari pabrik. Aman di sini hanya karena TV mulai dengan nol paket mati.
 - Pembaca yang menyalin daftar paket dari `changelog.md` ke TV lain bisa membuat TV rusak.
-- IP TV bawaan di skrip (`192.168.100.33`) dari DHCP dan bisa berubah.
+- IP TV bawaan di skrip (`192.168.100.35`) dari DHCP dan sudah pernah berubah (dari `.33`).
 - Lisensi repo ini belum ditetapkan. Tidak ada file lisensi di repo.
 - Firmware keluaran Xiaomi berikutnya bisa mengaktifkan lagi paket yang dimatikan. Belum diketahui, belum diuji.
 - Sumber prompt di `GUIDE.md` ditautkan ke `tv.cobanov.dev` lewat http. Tautan itu belum diperiksa ulang.
@@ -84,3 +87,4 @@ Belum ada backlog yang disepakati di repo. Item di bawah ini hanya celah dokumen
 1. Merapikan `changelog.md` supaya bagian "RESULT" dan "NOT DONE" yang sudah usang tidak membingungkan pembaca.
 2. Menyamakan jumlah penyesuaian di `GUIDE.md` dengan isi tabelnya.
 3. Menambah file lisensi bila pemilik memutuskan.
+4. Mengubah isi dock tv-home bila pemilik mau: edit `launcher/res/values/config.xml` di `~/Projects/Personal/tv-home`, build ulang dengan `build-android9.sh`, pasang dengan `adb install -r`.

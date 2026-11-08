@@ -17,12 +17,18 @@ anything against the TV.
   (Medium article + mgultekin/android-cleaning-xiaomi, unlicensed: link, never copy)
   and lists where it did not fit this device.
 - `connect.sh [tv-ip] [port]` — starts `adb_relay.py` and connects adb to
-  `127.0.0.1:15555`. Default TV IP `192.168.100.33` (DHCP, may change).
+  `127.0.0.1:15555`. Default TV IP `192.168.100.35` since 2026-11-08 (was .33; DHCP, may
+  change again: scan port 5555 with `/usr/bin/nc` to find it).
 - `adb_relay.py` — TCP relay. macOS 26 Local Network Privacy blocks Homebrew
   `adb` from the LAN; Apple-signed `/usr/bin/python3` is allowed, so it does the
   hop. Keep the local port outside 5554–5585 (reserved for emulators).
 - `revert.sh` — **full revert**: re-enables every disabled package, restores the
   stock launcher and default settings, **reboots the TV**. Ask before running.
+- `revert-tvhome.sh` — undoes only the 2026-11-08 launcher switch: Projectivy back as Home,
+  tv-home disabled. Run it before `revert.sh` if you want both undone.
+- Home launcher since 2026-11-08 is tv-home (`com.mihir.tvhome`), built from
+  `~/Projects/Personal/tv-home` with `launcher/build-android9.sh`. Projectivy is disabled, not
+  removed. Details in `changelog.md`.
 - `disabled-*.txt`, `meminfo-*.txt`, `packages-*.txt` — snapshots.
 - `projectivy-4.71.apk` — launcher APK that was installed (verified, see changelog). Local only, git-ignored.
 - `relay*.log` — relay output; safe to delete.
@@ -34,6 +40,8 @@ anything against the TV.
 - Never disable anything on the changelog's "Protected — never disabled" list
   (HDMI-CEC, remote/BLE, Play services, settings, the `FallbackHome` safety net).
 - Log every change in `changelog.md` using the same batch format.
+- scrcpy works through the relay only with `--hwdec=disabled`. Run one heavy job at a time
+  (scrcpy, uiautomator, big pulls): the 1 GB stick overloads and drops off Wi-Fi.
 - Android 9 has no role manager: set the launcher with
   `pm set-home-activity`, and disable competing launchers or HOME keeps
   resuming the old one.

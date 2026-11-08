@@ -187,3 +187,73 @@ so real idle headroom is higher still.
 `./revert.sh` — re-enables all 40, hands home back to tvlauncher, restores animation
 scales + screensaver, reboots. Optional commented line also uninstalls Projectivy.
 Verified: enable/disable round-trip tested on-device; `sh -n` syntax-checked.
+
+## 2026-11-08: remote unpaired (open) and tv-home launcher replaces Projectivy
+
+### Remote stopped working (still open)
+- Stick moved to 192.168.100.35 (DHCP). Find it by scanning port 5555 with `/usr/bin/nc`.
+- Cause: the stick lost its bond with the remote. `Bonded devices` is empty and
+  `BleRemoteService` logs `RC size:0`. The remote ((its Bluetooth address)) keeps advertising
+  but is not discoverable: Add accessory lists nothing.
+- Not caused by the debloat. The disabled list is identical to `disabled-final.txt`;
+  Bluetooth and `com.google.android.tv.remote.service` are enabled.
+- Xiaomi's auto-pair (`com.xiaomi.mitv.settings.bluetooth.BleRemoteService` inside
+  `/system/app/Bluetooth/Bluetooth.apk`, decompiled with androguard) calls `createBond` only if
+  the remote's address matches the saved wake-up RC (`persist.bluetooth.wakeuprcaddr`, eMMC
+  `bt_rc_mac`, `persist.sys.auto_pair_rc_macaddr`) or if `txPower - rssi <= 51`. With no TX power
+  in the advert it uses 65535, which never passes. Best RSSI seen: -54 dBm.
+- ADB cannot force it: shell lacks `BLUETOOTH_ADMIN` and SELinux blocks setting those props.
+- Add accessory pauses Xiaomi's scanner ("An app is discovering devices, stop it!").
+- Next: reset the remote (batteries out about a minute), hold Home + Back touching the stick.
+  Meanwhile control the TV from the Google TV phone app or scrcpy.
+
+### scrcpy
+- `brew install scrcpy` (5.0.1) works through the relay but needs `--hwdec=disabled`:
+  VideoToolbox fails on the Amlogic H.264 stream ("Invalid data found when processing input").
+- Running scrcpy, uiautomator and YouTube at once pushed load to 14 and dropped Wi-Fi briefly.
+  Run one heavy job at a time on this 1 GB stick.
+
+### Launcher: Projectivy -> tv-home
+- Source: github.com/mihirgupta0900/tv-home (MIT, commit 1980354), local copy with changes in
+  `~/Projects/Personal/tv-home`. Built with `launcher/build-android9.sh`: min/target SDK 28,
+  Java 8 API plus the API 28 `android.jar`, so APIs missing on Android 9 fail at build time.
+- Changes for this stick: dock = YouTube, Netflix, Play Store; Projectivy hidden; Live TV and
+  input picker empty; the Inputs pill and Menu-key popup are hidden on devices with no inputs;
+  `<queries>` removed (Android 11 only).
+- APK SHA-256 `96ef4207b02876f36cb46415c64490e4e923d3310381d67d919813be0ff7a087`, 4.7 MB.
+  Permissions: Wi-Fi state, network state, fine location (granted over ADB to show the SSID).
+- Backup before the switch: `disabled-before-tvhome.txt`, `home-before-tvhome.txt`.
+- Order used: install, grant, `pm set-home-activity com.mihir.tvhome/.MainActivity`, screenshot
+  confirms it draws, then `pm disable-user --user 0 com.spocky.projengmenu`.
+- Verified: HOME from inside YouTube lands on tv-home 3/3; D-pad right works; reboot boots
+  straight into tv-home. Down does nothing because every TV app is already in the dock.
+- Memory after reboot and 90 s settle: status normal, free 378,217K, tv-home PSS about 17 MB.
+- Disabled packages now 41 (the 40 plus Projectivy).
+
+### Revert
+- `./revert-tvhome.sh` re-enables Projectivy, makes it Home, disables tv-home. Syntax-checked
+  with `sh -n`; not run on the device.
+- `./revert.sh` (full revert) re-enables everything including Projectivy, but tv-home stays
+  installed and enabled. Run `revert-tvhome.sh` first if you want both undone.
+
+### Remote fixed (2026-11-08, later the same day)
+- Built `rcpair/` (RC Pair, `com.rizkiadpra.rcpair`, 12.7 KB, permissions BLUETOOTH +
+  BLUETOOTH_ADMIN). It calls `createBond(TRANSPORT_LE)` on a MAC passed over adb:
+  `adb shell am start -n com.rizkiadpra.rcpair/.PairActivity --es mac <remote-mac>`.
+- First attempt failed in 93 ms (remote not in pairing mode). Xiaomi's own guide screen
+  (RCNoticeWindow) then showed the real combo: hold the two buttons left and right of Home.
+  With retries every 3 s, the bond formed at 14:42:07 (BONDING to BONDED in 0.3 s).
+- Xiaomi's BleRemoteService took over as usual: HID connected, `RC size:1`, voice audio bound.
+- Verified: key presses arrive from input device "Xiaomi RC"; after a reboot the bond persists,
+  HID reconnects, keys work without re-pairing.
+- RC Pair is now disabled (`pm disable-user`). Disabled packages: 42 (40 + Projectivy + RC Pair).
+  To re-pair in future: `pm enable com.rizkiadpra.rcpair`, hold the two buttons beside Home, run
+  the am start line above every few seconds until `dumpsys bluetooth_manager` lists the remote.
+
+## 2026-11-08 22:10: tv-home prayer-times build installed
+- Built from `~/Projects/Personal/tv-home` branch `aquaman-android9` (commit f6eaafa): family picture
+  Home, Kemenag prayer times, 10-minute reminder banner, full-screen adhan (switched OFF until Rizki
+  approves the recording), one exact alarm, settings panel. Details in tv-home `PRD.md` / `HANDOFF.md`.
+- New grants: `appops set com.mihir.tvhome SYSTEM_ALERT_WINDOW allow` (banner overlay); location
+  permission was already granted. Disabled packages unchanged (42).
+- RAM, same conditions (fresh install, Home, 80 s): old build 24,320 KB, new 24,153 to 25,536 KB; status normal.
